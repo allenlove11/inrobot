@@ -2,7 +2,7 @@
 const nextConfig = {
   reactStrictMode: false,
   images: {
-    domains: ['localhost', '38.242.197.100'], // 添加您的 Strapi 服务器 IP
+    domains: ['localhost', '38.242.197.100'],
   },
   async headers() {
     return [
@@ -11,7 +11,7 @@ const nextConfig = {
         headers: [
           {
             key: 'Content-Security-Policy',
-            value: "default-src 'self' http: https: data: blob: 'unsafe-inline'"
+            value: "default-src 'self'; connect-src 'self' http://38.242.197.100:1337; script-src 'self' 'unsafe-inline' 'unsafe-eval';"
           }
         ]
       }
