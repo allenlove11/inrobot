@@ -2,7 +2,7 @@
 const nextConfig = {
   reactStrictMode: false,
   images: {
-    domains: ['localhost'], // 允许加载来自 localhost 的图片
+    domains: ['localhost', '38.242.197.100'], // 添加您的 Strapi 服务器 IP
   },
   async headers() {
     return [
@@ -11,7 +11,7 @@ const nextConfig = {
         headers: [
           {
             key: 'Content-Security-Policy',
-            value: "upgrade-insecure-requests"
+            value: "default-src 'self' http: https: data: blob: 'unsafe-inline'"
           }
         ]
       }
@@ -20,4 +20,3 @@ const nextConfig = {
 }
 
 module.exports = nextConfig;
-
