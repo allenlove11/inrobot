@@ -3,54 +3,76 @@ import React, { useEffect, useState } from 'react';
 
 const Portfolio = () => {
   const [items, setItems] = useState([]);
-  const baseURL = 'http://38.242.197.100:1337'; // Strapi 服务器的基地址
+  const [isLoading, setIsLoading] = useState(true);
+  const [error, setError] = useState(null);
+
+  // 使用环境变量来设置 API URL
+  const baseURL = process.env.NEXT_PUBLIC_CLIENT_API_URL || 'http://38.242.197.100:1337';
 
   const fetchData = async () => {
-    let url = `${baseURL}/api/inrobots?populate=*`;
-    const response = await fetch(url);
-    const data = await response.json();
-    const formattedData = data.data.map(({ id, attributes }) => ({
-      id,
-      title: attributes.title,
-      slug: attributes.slug,
-      brand: attributes.brand,
-      availability: attributes.availability,
-    }));
-
-    setItems(formattedData);
+    setIsLoading(true);
+    setError(null);
+    try {
+      const url = `${baseURL}/api/inrobots?populate=*`;
+      const response = await fetch(url);
+      if (!response.ok) {
+        throw new Error(`HTTP error! status: ${response.status}`);
+      }
+      const data = await response.json();
+      const formattedData = data.data.map(({ id, attributes }) => ({
+        id,
+        title: attributes.title,
+        slug: attributes.slug,
+        brand: attributes.brand,
+        availability: attributes.availability,
+      }));
+      setItems(formattedData);
+    } catch (e) {
+      console.error("Failed to fetch data:", e);
+      setError("Failed to load data. Please try again later.");
+    } finally {
+      setIsLoading(false);
+    }
   };
 
   useEffect(() => {
     fetchData();
   }, []);
 
+  if (isLoading) return <div>Loading...</div>;
+  if (error) return <div>Error: {error}</div>;
+
   return (
     <>
-      <div className="portfolio blog-grid-inner mb-80" >
+      <div className="portfolio blog-grid-inner mb-80">
         <div className="container">
           <div className="row grid blog-grid-inner">
-            {Array.isArray(items) && items.length > 0 && items.map((item, i) => (
-              <div key={i} className="col-xl-3 col-lg-6 col-md-6 mb-30 grid-item">
-                <div className="tp-blog-item">
-                  <div className="tp-blog-content">
-                    <h3 className="tp-blog-title line-clamp-1">{item.title}</h3>
-                    <p className="tp-blog-brand line-clamp-1">{item.brand}</p>
-                    <p className="tp-blog-availability">Availability: {item.availability}</p>
-                    <h4 className="tp-blog-enquire">Enquire</h4>
-                    <ul className="tp-blog-features">
-                      <li>✓ 12-month warranty</li>
-                      <li>✓ Dispatch Immediately</li>
-                      <li>✓ Delivery Worldwide</li>
-                    </ul>
-                    <div className="tp-blog-button">
-                      <Link href={`/${item.slug}`} className="quote-button">
-                        Get a Quote
-                      </Link>
+            {items.length > 0 ? (
+              items.map((item) => (
+                <div key={item.id} className="col-xl-3 col-lg-6 col-md-6 mb-30 grid-item">
+                  <div className="tp-blog-item">
+                    <div className="tp-blog-content">
+                      <h3 className="tp-blog-title line-clamp-1">{item.title}</h3>
+                      <p className="tp-blog-brand line-clamp-1">{item.brand}</p>
+                      <p className="tp-blog-availability">Availability: {item.availability}</p>
+                      <h4 className="tp-blog-enquire">Enquire</h4>
+                      <ul className="tp-blog-features">
+                        <li>✓ 12-month warranty</li>
+                        <li>✓ Dispatch Immediately</li>
+                        <li>✓ Delivery Worldwide</li>
+                      </ul>
+                      <div className="tp-blog-button">
+                        <Link href={`/${item.slug}`} className="quote-button">
+                          Get a Quote
+                        </Link>
+                      </div>
                     </div>
                   </div>
                 </div>
-              </div>
-            ))}
+              ))
+            ) : (
+              <div>No items found</div>
+            )}
           </div>
         </div>
       </div>
