@@ -7,7 +7,7 @@ import React from "react";
 import PostboxArea from "../components/blog-details/postbox-area";
 import ErrorPage from 'next/error';
 
-const BlogPost = ({ post, error }) => {
+const BlogPost = ({ post, error, clientApiUrl }) => {
   const router = useRouter();
 
   if (error) {
@@ -30,7 +30,7 @@ const BlogPost = ({ post, error }) => {
         <div id="smooth-content">
           <main>
             <BreadcrumbSix />
-            <PostboxArea post={post} />
+            <PostboxArea post={post} clientApiUrl={clientApiUrl} />
           </main>
           <FooterFive style_contact={true} style_team={true} bg_style={false} />
         </div>
@@ -42,7 +42,9 @@ const BlogPost = ({ post, error }) => {
 export async function getStaticProps({ params }) {
   const { slug } = params;
   try {
-    const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/inrobots?filters[slug][$eq]=${slug}&populate=*`);
+    // 使用 NEXT_PUBLIC_API_URL 用于服务器端渲染
+    const apiUrl = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:1337';
+    const response = await fetch(`${apiUrl}/api/inrobots?filters[slug][$eq]=${slug}&populate=*`);
     if (!response.ok) {
       throw new Error(`HTTP error! status: ${response.status}`);
     }
@@ -54,7 +56,10 @@ export async function getStaticProps({ params }) {
 
     const post = data.data[0].attributes;
     return { 
-      props: { post },
+      props: { 
+        post,
+        clientApiUrl: process.env.NEXT_PUBLIC_CLIENT_API_URL // 将客户端 API URL 传递给组件
+      },
       revalidate: 60 * 60, // Revalidate every hour
     };
   } catch (error) {
@@ -65,7 +70,9 @@ export async function getStaticProps({ params }) {
 
 export async function getStaticPaths() {
   try {
-    const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/inrobots?populate=*`);
+    // 使用 NEXT_PUBLIC_API_URL 用于服务器端渲染
+    const apiUrl = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:1337';
+    const response = await fetch(`${apiUrl}/api/inrobots?populate=*`);
     if (!response.ok) {
       throw new Error(`HTTP error! status: ${response.status}`);
     }
